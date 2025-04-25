@@ -1,0 +1,261 @@
+/* Button styles */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast) ease-in-out;
+  border: none;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:focus {
+    outline: 2px solid var(--primary-light);
+    outline-offset: 2px;
+  }
+
+  // Button variants
+  &.primary {
+    background-color: var(--primary-color);
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: var(--primary-dark);
+    }
+  }
+
+  &.secondary {
+    background-color: var(--secondary-color);
+    color: white;
+
+    &:hover:not(:disabled) {
+        background-color: darken(#8b5cf6, 10%);
+    }
+  }
+
+  &.outlined {
+    background-color: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+
+    &:hover:not(:disabled) {
+      background-color: rgba(var(--primary-color), 0.05);
+    }
+  }
+
+  &.danger {
+    background-color: var(--error-color);
+    color: white;
+
+    &:hover:not(:disabled) {
+        background-color: darken(#ef4444, 10%);
+    }
+  }
+
+  // Button sizes
+  &.small {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-sm);
+  }
+
+  &.medium {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-md);
+  }
+
+  &.large {
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-size-lg);
+  }
+
+  // Button with icon
+  &.withIcon {
+    gap: var(--spacing-xs);
+  }
+}
+
+/* Input styles */
+.formGroup {
+  margin-bottom: var(--spacing-md);
+  width: 100%;
+}
+
+.label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-md);
+  transition: border-color var(--transition-fast) ease-in-out;
+  background-color: var(--surface-color);
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(var(--primary-light), 0.2);
+  }
+
+  &.error {
+    border-color: var(--error-color);
+  }
+
+  &:disabled {
+    background-color: rgba(var(--border-color), 0.2);
+    cursor: not-allowed;
+  }
+}
+
+.select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--spacing-sm) center;
+  background-size: 20px;
+  padding-right: var(--spacing-xl);
+}
+
+.textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.errorMessage {
+  color: var(--error-color);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-xs);
+}
+
+/* Modal styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn var(--transition-fast) ease-in-out;
+}
+
+.modal {
+  background-color: var(--surface-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 500px;
+  animation: slideIn var(--transition-normal) ease-in-out;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modalHeader {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modalTitle {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  margin: 0;
+}
+
+.modalCloseButton {
+  background: transparent;
+  border: none;
+  font-size: var(--font-size-xl);
+  cursor: pointer;
+  color: var(--text-secondary);
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}
+
+.modalBody {
+  padding: var(--spacing-lg);
+}
+
+.modalFooter {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+}
+
+/* Badge styles for priorities and statuses */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+
+  &.priorityLow {
+    background-color: rgba(var(--priority-low), 0.15);
+    color: var(--priority-low);
+  }
+
+  &.priorityMedium {
+    background-color: rgba(var(--priority-medium), 0.15);
+    color: var(--priority-medium);
+  }
+
+  &.priorityHigh {
+    background-color: rgba(var(--priority-high), 0.15);
+    color: var(--priority-high);
+  }
+
+  &.statusPending {
+    background-color: rgba(var(--warning-color), 0.15);
+    color: var(--warning-color);
+  }
+
+  &.statusCompleted {
+    background-color: rgba(var(--success-color), 0.15);
+    color: var(--success-color);
+  }
+}
+
+/* Responsive adjustments */
+// @include mobile {
+//   .modal {
+//     width: 90%;
+//   }
+
+//   .modalHeader,
+//   .modalBody,
+//   .modalFooter {
+//     padding: var(--spacing-md);
+//   }
+// }
+
+@mixin mobile {
+    @media (max-width: 768px) {
+      @content;
+    }
+  }
