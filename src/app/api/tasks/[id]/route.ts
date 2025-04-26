@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import mongoose from "mongoose";
 import connectDB from "@/lib/db/mongodb";
 import Task from "@/models/Task";
 import { authenticate } from "@/lib/utils/auth";
@@ -8,8 +9,18 @@ import {
   methodHandler,
 } from "@/lib/middlewares/api-middleware";
 
+// Helper function to validate MongoDB ObjectId
+function isValidObjectId(id: string): boolean {
+  return mongoose.Types.ObjectId.isValid(id);
+}
+
 // Helper function to get a task and ensure it belongs to the current user
 async function getUserTask(taskId: string, userId: string) {
+  // Validate taskId format
+  if (!isValidObjectId(taskId)) {
+    throw new Error("Invalid task ID format");
+  }
+
   const task = await Task.findById(taskId);
 
   if (!task) {

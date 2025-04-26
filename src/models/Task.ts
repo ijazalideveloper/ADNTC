@@ -1,9 +1,10 @@
-import mongoose, { Document, Model, Schema } from "mongoose";
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
-export type TaskPriority = "low" | "medium" | "high";
-export type TaskStatus = "pending" | "completed";
+export type TaskPriority = 'low' | 'medium' | 'high';
+export type TaskStatus = 'pending' | 'completed';
 
 export interface ITask extends Document {
+  _id: mongoose.Types.ObjectId;
   title: string;
   description: string;
   priority: TaskPriority;
@@ -17,39 +18,47 @@ const TaskSchema = new mongoose.Schema<ITask>(
   {
     title: {
       type: String,
-      required: [true, "Please provide a title"],
+      required: [true, 'Please provide a title'],
       trim: true,
-      maxlength: [100, "Title cannot be more than 100 characters"],
+      maxlength: [100, 'Title cannot be more than 100 characters'],
     },
     description: {
       type: String,
       trim: true,
-      maxlength: [1000, "Description cannot be more than 1000 characters"],
+      maxlength: [1000, 'Description cannot be more than 1000 characters'],
     },
     priority: {
       type: String,
       enum: {
-        values: ["low", "medium", "high"],
-        message: "{VALUE} is not supported as priority",
+        values: ['low', 'medium', 'high'],
+        message: '{VALUE} is not supported as priority',
       },
-      default: "medium",
+      default: 'medium',
     },
     status: {
       type: String,
       enum: {
-        values: ["pending", "completed"],
-        message: "{VALUE} is not supported as status",
+        values: ['pending', 'completed'],
+        message: '{VALUE} is not supported as status',
       },
-      default: "pending",
+      default: 'pending',
     },
     user: {
       type: Schema.Types.ObjectId,
-      ref: "User",
-      required: [true, "Please provide a user"],
+      ref: 'User',
+      required: [true, 'Please provide a user'],
     },
   },
   {
     timestamps: true,
+    toJSON: {
+      transform: (doc, ret) => {
+        ret.id = ret._id.toString();
+        delete ret._id;
+        delete ret.__v;
+        return ret;
+      },
+    },
   }
 );
 
@@ -59,7 +68,6 @@ TaskSchema.index({ user: 1, priority: 1 });
 TaskSchema.index({ user: 1, createdAt: -1 });
 
 // Delete model if it exists to prevent overwrite error in development
-const TaskModel: Model<ITask> =
-  mongoose.models.Task || mongoose.model<ITask>("Task", TaskSchema);
+const TaskModel: Model<ITask> = mongoose.models.Task || mongoose.model<ITask>('Task', TaskSchema);
 
 export default TaskModel;

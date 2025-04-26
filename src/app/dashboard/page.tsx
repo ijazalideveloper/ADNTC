@@ -36,8 +36,17 @@ const Dashboard: React.FC = () => {
     try {
       const response = await tasksApi.getAllTasks();
 
-      if (response.success) {
-        setTasks(response.data.tasks);
+      if (response.success && response.data) {
+        // Format the dates properly
+        const formattedTasks = response.data.tasks.map((task) => ({
+          ...task,
+          createdAt: new Date(task.createdAt),
+          updatedAt: new Date(task.updatedAt),
+          // Ensure the id field exists
+          id: task.id || task?._id?.toString() || "",
+        }));
+
+        setTasks(formattedTasks);
       } else {
         setError(response.error || "Failed to load tasks");
       }
@@ -51,7 +60,7 @@ const Dashboard: React.FC = () => {
   };
 
   const handleCreateTask = async (
-    taskData: Omit<Task, "id" | "userId" | "createdAt" | "updatedAt">
+    taskData: Omit<Task, "id" | "user" | "createdAt" | "updatedAt">
   ) => {
     setLoading(true);
 
@@ -63,9 +72,18 @@ const Dashboard: React.FC = () => {
         status: taskData.status,
       });
 
-      if (response.success) {
-        // Fetch all tasks again to ensure we have the latest data
-        fetchTasks();
+      if (response.success && response.data) {
+        // Format the new task
+        const newTask = {
+          ...response.data.task,
+          createdAt: new Date(response.data.task.createdAt),
+          updatedAt: new Date(response.data.task.updatedAt),
+          id: response.data.task.id || response.data.task._id?.toString() || "",
+        };
+
+        // Add the new task to the list
+        setTasks((prevTasks) => [...prevTasks, newTask]);
+        setLoading(false);
       } else {
         setError(response.error || "Failed to create task");
         setLoading(false);
@@ -91,12 +109,16 @@ const Dashboard: React.FC = () => {
           updatedData.status as string
         );
 
-        if (response.success) {
+        if (response.success && response.data) {
           // Update task in local state
           setTasks((prevTasks) =>
             prevTasks.map((task) =>
               task.id === taskId
-                ? { ...task, ...updatedData, updatedAt: new Date() }
+                ? {
+                    ...task,
+                    ...updatedData,
+                    updatedAt: new Date(response?.data?.task?.updatedAt),
+                  }
                 : task
             )
           );
@@ -115,17 +137,24 @@ const Dashboard: React.FC = () => {
 
         const response = await tasksApi.updateTask(taskId, {
           title: updatedData.title || currentTask.title,
-          description: updatedData.description ?? currentTask.description,
+          description:
+            updatedData.description !== undefined
+              ? updatedData.description
+              : currentTask.description,
           priority: updatedData.priority || currentTask.priority,
           status: updatedData.status || currentTask.status,
         });
 
-        if (response.success) {
+        if (response.success && response.data) {
           // Update task in local state
           setTasks((prevTasks) =>
             prevTasks.map((task) =>
               task.id === taskId
-                ? { ...task, ...updatedData, updatedAt: new Date() }
+                ? {
+                    ...task,
+                    ...updatedData,
+                    updatedAt: new Date(response?.data?.task?.updatedAt),
+                  }
                 : task
             )
           );
@@ -164,7 +193,12 @@ const Dashboard: React.FC = () => {
   };
 
   if (authLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Loading...</p>
+      </div>
+    );
   }
 
   if (!isAuthenticated) {

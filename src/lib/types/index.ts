@@ -12,11 +12,11 @@ export type TaskStatus = "pending" | "completed";
 
 export interface Task {
   id: string;
-  userId: string;
   title: string;
   description: string;
   priority: TaskPriority;
   status: TaskStatus;
+  user: string;
   createdAt: Date;
   updatedAt: Date;
 }

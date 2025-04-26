@@ -69,10 +69,12 @@ const TaskForm: React.FC<TaskFormProps> = ({
 
     if (validateForm()) {
       onSubmit({
-        title,
-        description,
-        priority,
-        status,
+          title,
+          description,
+          priority,
+          status,
+          _id: undefined,
+          user: ""
       });
     }
   };

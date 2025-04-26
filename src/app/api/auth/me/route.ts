@@ -4,6 +4,7 @@ import User from "@/models/User";
 import { authenticate } from "@/lib/utils/auth";
 import {
   successResponse,
+  errorResponse,
   asyncHandler,
 } from "@/lib/middlewares/api-middleware";
 
@@ -17,13 +18,13 @@ export const GET = asyncHandler(async (req: NextRequest) => {
   const user = await User.findById(decoded.userId);
 
   if (!user) {
-    throw new Error("User not found");
+    return errorResponse("User not found", 404);
   }
 
   // Return user data
   return successResponse({
     user: {
-      id: user._id,
+      id: user._id.toString(),
       name: user.name,
       email: user.email,
     },

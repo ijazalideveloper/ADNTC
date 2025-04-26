@@ -1,32 +1,48 @@
-"use client";
+import { NextRequest } from "next/server";
+import connectDB from "@/lib/db/mongodb";
+import User from "@/models/User";
+import { createToken } from "@/lib/utils/auth";
+import {
+  successResponse,
+  errorResponse,
+  asyncHandler,
+} from "@/lib/middlewares/api-middleware";
 
-import React, { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import LoginForm from "@/components/auth/LoginForm";
-import useAuth from "@/lib/hooks/useAuth";
-import { LoginCredentials } from "@/lib/types";
+export const POST = asyncHandler(async (req: NextRequest) => {
+  await connectDB();
 
-const LoginPage: React.FC = () => {
-  const { login, isAuthenticated, loading, error } = useAuth();
-  const router = useRouter();
+  const body = await req.json();
+  const { email, password } = body;
 
-  // Redirect to dashboard if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.push("/dashboard");
-    }
-  }, [isAuthenticated, router]);
+  // Basic validation
+  if (!email || !password) {
+    return errorResponse("Please provide email and password", 400);
+  }
 
-  // Handle login form submission
-  const handleLogin = async (credentials: LoginCredentials) => {
-    await login(credentials);
-  };
+  // Find user with password included
+  const user = await User.findOne({ email }).select("+password");
 
-  return (
-    <div>
-      <LoginForm onSubmit={handleLogin} isLoading={loading} error={error} />
-    </div>
-  );
-};
+  // Check if user exists
+  if (!user) {
+    return errorResponse("Invalid credentials", 401);
+  }
 
-export default LoginPage;
+  // Verify password
+  const isPasswordValid = await user.comparePassword(password);
+  if (!isPasswordValid) {
+    return errorResponse("Invalid credentials", 401);
+  }
+
+  // Generate token
+  const token = createToken(user);
+
+  // Return user data (without password) and token
+  return successResponse({
+    user: {
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+    },
+    token,
+  });
+});
