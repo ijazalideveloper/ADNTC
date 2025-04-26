@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import TaskList from "@/components/tasks/TaskList";
 import useAuth from "@/lib/hooks/useAuth";
-import { api } from "@/lib/utils/api";
+import { tasksApi } from "@/lib/utils/api";
 import { Task } from "@/lib/types";
 import styles from "@/styles/layouts/_layout.module.scss";
 
@@ -34,51 +34,14 @@ const Dashboard: React.FC = () => {
     setError(null);
 
     try {
-      // In a real app, this would be an API call
-      // For demonstration, use mock data
-      // const response = await api.get<Task[]>('/tasks');
+      const response = await tasksApi.getAllTasks();
 
-      // Mock response with sample data
-      const mockTasks: Task[] = [
-        {
-          id: "1",
-          userId: user?.id || "1",
-          title: "Complete project documentation",
-          description:
-            "Write comprehensive documentation for the Task Manager project, including API endpoints and component usage.",
-          priority: "high",
-          status: "pending",
-          createdAt: new Date("2025-04-20T10:00:00"),
-          updatedAt: new Date("2025-04-20T10:00:00"),
-        },
-        {
-          id: "2",
-          userId: user?.id || "1",
-          title: "Fix login page responsiveness",
-          description:
-            "The login page is not displaying correctly on mobile devices. Need to adjust the layout for smaller screens.",
-          priority: "medium",
-          status: "pending",
-          createdAt: new Date("2025-04-22T14:30:00"),
-          updatedAt: new Date("2025-04-22T14:30:00"),
-        },
-        {
-          id: "3",
-          userId: user?.id || "1",
-          title: "Weekly team meeting",
-          description:
-            "Prepare agenda for the weekly team meeting and share it with team members.",
-          priority: "low",
-          status: "completed",
-          createdAt: new Date("2025-04-23T09:15:00"),
-          updatedAt: new Date("2025-04-24T11:45:00"),
-        },
-      ];
+      if (response.success) {
+        setTasks(response.data.tasks);
+      } else {
+        setError(response.error || "Failed to load tasks");
+      }
 
-      // Simulate API response delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      setTasks(mockTasks);
       setLoading(false);
     } catch (err) {
       console.error("Error fetching tasks:", err);
@@ -93,21 +56,20 @@ const Dashboard: React.FC = () => {
     setLoading(true);
 
     try {
-      // In a real app, this would be an API call
-      // For demonstration, create a mock task with a new ID
-      const newTask: Task = {
-        id: `task-${Date.now()}`,
-        userId: user?.id || "1",
-        ...taskData,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const response = await tasksApi.createTask({
+        title: taskData.title,
+        description: taskData.description,
+        priority: taskData.priority,
+        status: taskData.status,
+      });
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      setTasks((prevTasks) => [...prevTasks, newTask]);
-      setLoading(false);
+      if (response.success) {
+        // Fetch all tasks again to ensure we have the latest data
+        fetchTasks();
+      } else {
+        setError(response.error || "Failed to create task");
+        setLoading(false);
+      }
     } catch (err) {
       console.error("Error creating task:", err);
       setError("Failed to create task. Please try again later.");
@@ -122,19 +84,55 @@ const Dashboard: React.FC = () => {
     setLoading(true);
 
     try {
-      // In a real app, this would be an API call
-      // For demonstration, update the task in the local state
+      // If only status is being updated, use updateTaskStatus method
+      if (Object.keys(updatedData).length === 1 && "status" in updatedData) {
+        const response = await tasksApi.updateTaskStatus(
+          taskId,
+          updatedData.status as string
+        );
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
+        if (response.success) {
+          // Update task in local state
+          setTasks((prevTasks) =>
+            prevTasks.map((task) =>
+              task.id === taskId
+                ? { ...task, ...updatedData, updatedAt: new Date() }
+                : task
+            )
+          );
+        } else {
+          setError(response.error || "Failed to update task");
+        }
+      } else {
+        // For more comprehensive updates, use updateTask method
+        const currentTask = tasks.find((task) => task.id === taskId);
 
-      setTasks((prevTasks) =>
-        prevTasks.map((task) =>
-          task.id === taskId
-            ? { ...task, ...updatedData, updatedAt: new Date() }
-            : task
-        )
-      );
+        if (!currentTask) {
+          setError("Task not found");
+          setLoading(false);
+          return;
+        }
+
+        const response = await tasksApi.updateTask(taskId, {
+          title: updatedData.title || currentTask.title,
+          description: updatedData.description ?? currentTask.description,
+          priority: updatedData.priority || currentTask.priority,
+          status: updatedData.status || currentTask.status,
+        });
+
+        if (response.success) {
+          // Update task in local state
+          setTasks((prevTasks) =>
+            prevTasks.map((task) =>
+              task.id === taskId
+                ? { ...task, ...updatedData, updatedAt: new Date() }
+                : task
+            )
+          );
+        } else {
+          setError(response.error || "Failed to update task");
+        }
+      }
 
       setLoading(false);
     } catch (err) {
@@ -148,13 +146,15 @@ const Dashboard: React.FC = () => {
     setLoading(true);
 
     try {
-      // In a real app, this would be an API call
-      // For demonstration, remove the task from the local state
+      const response = await tasksApi.deleteTask(taskId);
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (response.success) {
+        // Remove task from local state
+        setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+      } else {
+        setError(response.error || "Failed to delete task");
+      }
 
-      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
       setLoading(false);
     } catch (err) {
       console.error("Error deleting task:", err);

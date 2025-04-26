@@ -1,15 +1,11 @@
-import React, { createContext, useState, useEffect, useCallback } from "react";
-import {
-  User,
-  LoginCredentials,
-  SignupCredentials,
-  AuthState,
-} from "@/lib/types";
+import React, { createContext, useState, useEffect, useCallback } from 'react';
+import { User, LoginCredentials, SignupCredentials, AuthState } from '@/lib/types';
+import { authApi } from '@/lib/utils/api';
 
 // Create an interface for the auth context
 interface AuthContextType extends AuthState {
-  login: (credentials: LoginCredentials) => Promise<void>;
-  signup: (credentials: SignupCredentials) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<boolean>;
+  signup: (credentials: SignupCredentials) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -19,8 +15,8 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   loading: false,
   error: null,
-  login: async () => {},
-  signup: async () => {},
+  login: async () => false,
+  signup: async () => false,
   logout: () => {},
 });
 
@@ -43,26 +39,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const checkAuth = async () => {
       try {
         // Check if token exists in localStorage
-        const token = localStorage.getItem("token");
-
-        if (token) {
-          // In a real app, you would verify the token with your backend
-          // For now, we'll just set isAuthenticated to true
-
-          // Mock user data (in a real app, this would come from the API)
-          const user: User = {
-            id: "1",
-            name: "John Doe",
-            email: "john@example.com",
-          };
-
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
           setAuthState({
-            user,
+            user: null,
+            isAuthenticated: false,
+            loading: false,
+            error: null,
+          });
+          return;
+        }
+        
+        // Verify token with backend
+        const response = await authApi.getCurrentUser();
+        
+        if (response.success && response.data.user) {
+          setAuthState({
+            user: {
+              id: response.data.user.id,
+              name: response.data.user.name,
+              email: response.data.user.email,
+            },
             isAuthenticated: true,
             loading: false,
             error: null,
           });
         } else {
+          // Token is invalid, remove it
+          localStorage.removeItem('token');
           setAuthState({
             user: null,
             isAuthenticated: false,
@@ -71,93 +76,107 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           });
         }
       } catch (error) {
+        console.error('Auth check error:', error);
+        // Clear token in case of error
+        localStorage.removeItem('token');
         setAuthState({
           user: null,
           isAuthenticated: false,
           loading: false,
-          error: "Failed to authenticate",
+          error: 'Failed to authenticate',
         });
       }
     };
-
+    
     checkAuth();
   }, []);
 
   // Login function
-  const login = useCallback(async (credentials: LoginCredentials) => {
+  const login = useCallback(async (credentials: LoginCredentials): Promise<boolean> => {
     setAuthState((prev) => ({ ...prev, loading: true, error: null }));
-
+    
     try {
-      // In a real app, you would call your API for authentication
-      // For the demo, we'll simulate a successful login after a delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Mock user data (in a real app, this would come from the API)
-      const user: User = {
-        id: "1",
-        name: "John Doe",
-        email: credentials.email,
-      };
-
-      // Store the token in localStorage
-      localStorage.setItem("token", "mock-jwt-token");
-
-      // Update auth state
-      setAuthState({
-        user,
-        isAuthenticated: true,
-        loading: false,
-        error: null,
-      });
+      const response = await authApi.login(credentials.email, credentials.password);
+      
+      if (response.success && response.data.user) {
+        setAuthState({
+          user: {
+            id: response.data.user.id,
+            name: response.data.user.name,
+            email: response.data.user.email,
+          },
+          isAuthenticated: true,
+          loading: false,
+          error: null,
+        });
+        return true;
+      } else {
+        setAuthState((prev) => ({
+          ...prev,
+          loading: false,
+          error: response.error || 'Invalid email or password',
+        }));
+        return false;
+      }
     } catch (error) {
+      console.error('Login error:', error);
       setAuthState((prev) => ({
         ...prev,
         loading: false,
-        error: "Invalid email or password",
+        error: error instanceof Error ? error.message : 'Failed to login',
       }));
+      return false;
     }
   }, []);
 
   // Signup function
-  const signup = useCallback(async (credentials: SignupCredentials) => {
+  const signup = useCallback(async (credentials: SignupCredentials): Promise<boolean> => {
     setAuthState((prev) => ({ ...prev, loading: true, error: null }));
-
+    
     try {
-      // In a real app, you would call your API for user registration
-      // For the demo, we'll simulate a successful signup after a delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Mock user data (in a real app, this would come from the API)
-      const user: User = {
-        id: "1",
-        name: credentials.name,
-        email: credentials.email,
-      };
-
-      // Store the token in localStorage
-      localStorage.setItem("token", "mock-jwt-token");
-
-      // Update auth state
-      setAuthState({
-        user,
-        isAuthenticated: true,
-        loading: false,
-        error: null,
-      });
+      const response = await authApi.signup(
+        credentials.name,
+        credentials.email,
+        credentials.password,
+        credentials.confirmPassword
+      );
+      
+      if (response.success && response.data.user) {
+        setAuthState({
+          user: {
+            id: response.data.user.id,
+            name: response.data.user.name,
+            email: response.data.user.email,
+          },
+          isAuthenticated: true,
+          loading: false,
+          error: null,
+        });
+        return true;
+      } else {
+        setAuthState((prev) => ({
+          ...prev,
+          loading: false,
+          error: response.error || 'Failed to create account',
+        }));
+        return false;
+      }
     } catch (error) {
+      console.error('Signup error:', error);
       setAuthState((prev) => ({
         ...prev,
         loading: false,
-        error: "Failed to create account",
+        error: error instanceof Error ? error.message : 'Failed to create account',
       }));
+      return false;
     }
   }, []);
 
   // Logout function
   const logout = useCallback(() => {
     // Remove token from localStorage
-    localStorage.removeItem("token");
-
+    authApi.logout();
+    
     // Update auth state
     setAuthState({
       user: null,
