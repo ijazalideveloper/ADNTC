@@ -51,7 +51,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
       onSubmit({ email, password });
     }
   };
-
+// debugger
   return (
     <div className={styles.authContainer}>
       <div className={styles.authCard}>

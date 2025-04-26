@@ -117,6 +117,11 @@
 .formSubmitButton {
   width: 100%;
   margin-top: var(--spacing-md);
+
+  >svg {
+    width: 30px;
+    margin-inline-end: 10px;
+  }
 }
 
 /* Error message */

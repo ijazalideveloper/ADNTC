@@ -94,7 +94,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Login function
   const login = useCallback(async (credentials: LoginCredentials): Promise<boolean> => {
     setAuthState((prev) => ({ ...prev, loading: true, error: null }));
-    
+    debugger
     try {
       const response = await authApi.login(credentials.email, credentials.password);
       
