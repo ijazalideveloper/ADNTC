@@ -34,17 +34,17 @@ export default function Dashboard() {
     setError(null);
 
     try {
-      const response = await tasksApi.getAllTasks();
+      const response = await tasksApi?.getAllTasks();
       
       if (response.success && response.data) {
         // Format the dates properly
-        const formattedTasks = response.data.tasks.map(task => ({
+        const formattedTasks = response?.data?.tasks?.map(task => ({
           ...task,
           // Safely handle date conversion
-          createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
-          updatedAt: task.updatedAt ? new Date(task.updatedAt) : new Date(),
+          createdAt: task?.createdAt ? new Date(task?.createdAt) : new Date(),
+          updatedAt: task?.updatedAt ? new Date(task?.updatedAt) : new Date(),
           // Ensure the id field exists
-          id: task.id || (task._id ? task._id.toString() : ''),
+          id: task?.id || ((task as any)?._id ? (task as any)._id.toString() : ''),
         }));
         
         setTasks(formattedTasks);

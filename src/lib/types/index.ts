@@ -11,6 +11,7 @@ export type TaskPriority = "low" | "medium" | "high";
 export type TaskStatus = "pending" | "completed";
 
 export interface Task {
+  _id: any;
   id: string;
   title: string;
   description: string;
