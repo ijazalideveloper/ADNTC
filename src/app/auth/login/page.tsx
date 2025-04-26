@@ -1,48 +1,33 @@
-import { NextRequest } from "next/server";
-import connectDB from "@/lib/db/mongodb";
-import User from "@/models/User";
-import { createToken } from "@/lib/utils/auth";
-import {
-  successResponse,
-  errorResponse,
-  asyncHandler,
-} from "@/lib/middlewares/api-middleware";
+"use client";
 
-export const POST = asyncHandler(async (req: NextRequest) => {
-  await connectDB();
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import LoginForm from "@/components/auth/LoginForm";
+import useAuth from "@/lib/hooks/useAuth";
+import { LoginCredentials } from "@/lib/types";
 
-  const body = await req.json();
-  const { email, password } = body;
+export default function LoginPage() {
+  const { login, isAuthenticated, loading, error } = useAuth();
+  const router = useRouter();
 
-  // Basic validation
-  if (!email || !password) {
-    return errorResponse("Please provide email and password", 400);
-  }
+  // Redirect to dashboard if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/dashboard");
+    }
+  }, [isAuthenticated, router]);
 
-  // Find user with password included
-  const user = await User.findOne({ email }).select("+password");
+  // Handle login form submission
+  const handleLogin = async (credentials: LoginCredentials) => {
+    const success = await login(credentials);
+    if (success) {
+      router.push("/dashboard");
+    }
+  };
 
-  // Check if user exists
-  if (!user) {
-    return errorResponse("Invalid credentials", 401);
-  }
-
-  // Verify password
-  const isPasswordValid = await user.comparePassword(password);
-  if (!isPasswordValid) {
-    return errorResponse("Invalid credentials", 401);
-  }
-
-  // Generate token
-  const token = createToken(user);
-
-  // Return user data (without password) and token
-  return successResponse({
-    user: {
-      id: user._id.toString(),
-      name: user.name,
-      email: user.email,
-    },
-    token,
-  });
-});
+  return (
+    <div>
+      <LoginForm onSubmit={handleLogin} isLoading={loading} error={error} />
+    </div>
+  );
+}

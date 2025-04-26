@@ -54,7 +54,8 @@
     color: white;
 
     &:hover:not(:disabled) {
-        background-color: darken(#ef4444, 10%);
+        // background-color: darken(#ef4444, 10%);
+        background-color: scale-color(#ef4444, $lightness: -10%);
     }
   }
 

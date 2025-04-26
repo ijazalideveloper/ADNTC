@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI || '';
+const MONGODB_URI = process.env.NEXT_PUBLIC_MONGODB_URI || process.env.MONGODB_URI || '';
 
 if (!MONGODB_URI) {
   throw new Error(
@@ -8,53 +8,47 @@ if (!MONGODB_URI) {
   );
 }
 
-/**
- * Global is used here to maintain a cached connection across hot reloads
- * in development. This prevents connections growing exponentially
- * during API Route usage.
- */
-// Define a type for the cached mongoose connection
+// Define the type for the mongoose cache
 interface MongooseCache {
-  conn: typeof mongoose | null;
-  promise: Promise<typeof mongoose> | null;
+  conn: mongoose.Connection | null;
+  promise: Promise<mongoose.Connection> | null;
 }
 
-// Fix for the global mongoose cache
+// Add mongoose to global to prevent multiple connections
 declare global {
-  var mongoose: { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null };
+  var mongooseCache: MongooseCache;
 }
 
-// Initialize the cached connection
-const cached: MongooseCache = global.mongoose || { conn: null, promise: null };
-
-// Save the cached connection to the global object
-if (!global.mongoose) {
-  global.mongoose = cached;
-}
+// Initialize cache
+global.mongooseCache = global.mongooseCache || { conn: null, promise: null };
 
 async function connectDB() {
-  if (cached.conn) {
-    return cached.conn;
+  if (global.mongooseCache.conn) {
+    console.log('Using existing connection');
+    return global.mongooseCache.conn;
   }
 
-  if (!cached.promise) {
+  if (!global.mongooseCache.promise) {
     const opts = {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      return mongoose;
-    });
+    console.log('Creating new connection to MongoDB');
+    global.mongooseCache.promise = mongoose.connect(MONGODB_URI, opts)
+      .then((mongoose) => {
+        return mongoose.connection;
+      });
   }
 
   try {
-    cached.conn = await cached.promise;
+    global.mongooseCache.conn = await global.mongooseCache.promise;
   } catch (e) {
-    cached.promise = null;
+    global.mongooseCache.promise = null;
+    console.error('Error connecting to database:', e);
     throw e;
   }
 
-  return cached.conn;
+  return global.mongooseCache.conn;
 }
 
 export default connectDB;

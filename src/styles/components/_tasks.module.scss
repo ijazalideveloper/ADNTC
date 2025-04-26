@@ -129,6 +129,33 @@
   margin-bottom: var(--spacing-md);
 }
 
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-md);
+  transition: border-color var(--transition-fast) ease-in-out;
+  background-color: var(--surface-color);
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(var(--primary-light), 0.2);
+  }
+
+  &.error {
+    border-color: var(--error-color);
+  }
+
+  &:disabled {
+    background-color: rgba(var(--border-color), 0.2);
+    cursor: not-allowed;
+  }
+}
+
 .formRow {
   display: flex;
   gap: var(--spacing-md);

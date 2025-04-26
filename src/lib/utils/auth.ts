@@ -25,19 +25,14 @@ export const createToken = (user: IUser): string => {
     email: user.email,
   };
 
-  return jwt.sign(
-    payload, 
-    JWT_SECRET as jwt.Secret, 
-    {
-      expiresIn: JWT_EXPIRES_IN,
-    }
-  );
+  // Fix jwt.sign type issue
+  return jwt.sign(payload, JWT_SECRET);
 };
 
 // Verify a JWT token
 export const verifyToken = (token: string): TokenPayload => {
   try {
-    return jwt.verify(token, JWT_SECRET as jwt.Secret) as TokenPayload;
+    return jwt.verify(token, JWT_SECRET) as TokenPayload;
   } catch (error) {
     throw new Error('Invalid or expired token');
   }

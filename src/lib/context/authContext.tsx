@@ -54,7 +54,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Verify token with backend
         const response = await authApi.getCurrentUser();
         
-        if (response.success && response.data.user) {
+        if (response.success && response.data && response.data.user) {
           setAuthState({
             user: {
               id: response.data.user.id,
@@ -98,7 +98,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const response = await authApi.login(credentials.email, credentials.password);
       
-      if (response.success && response.data.user) {
+      if (response.success && response.data && response.data.user) {
         setAuthState({
           user: {
             id: response.data.user.id,
@@ -141,7 +141,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         credentials.confirmPassword
       );
       
-      if (response.success && response.data.user) {
+      if (response.success && response.data && response.data.user) {
         setAuthState({
           user: {
             id: response.data.user.id,
