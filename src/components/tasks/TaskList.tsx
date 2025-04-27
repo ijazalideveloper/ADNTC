@@ -7,21 +7,32 @@ import Select from "@/components/ui/Select";
 import { Task, TaskPriority, TaskStatus } from "@/lib/types";
 import styles from "@/styles/components/_tasks.module.scss";
 
+type SortOption =
+  | "createdAt_desc"
+  | "createdAt_asc"
+  | "priority_high"
+  | "priority_low"
+  | "updatedAt_desc";
+
+interface TaskFilters {
+  status: TaskStatus | "all";
+  priority: TaskPriority | "all";
+  sortBy: SortOption;
+}
+
 interface TaskListProps {
   tasks: Task[];
-  onCreateTask: (
+  onCreateTask?: (
     task: Omit<Task, "id" | "userId" | "createdAt" | "updatedAt">
   ) => void;
   onUpdateTask: (taskId: string, task: Partial<Task>) => void;
   onDeleteTask: (taskId: string) => void;
   isLoading?: boolean;
+  defaultFilters?: TaskFilters;
+  disableStatusFilter?: boolean;
+  disablePriorityFilter?: boolean;
+  disableSortFilter?: boolean;
 }
-
-type SortOption =
-  | "createdAt_desc"
-  | "createdAt_asc"
-  | "priority_high"
-  | "priority_low";
 
 const TaskList: React.FC<TaskListProps> = ({
   tasks,
@@ -29,17 +40,30 @@ const TaskList: React.FC<TaskListProps> = ({
   onUpdateTask,
   onDeleteTask,
   isLoading = false,
+  defaultFilters,
+  disableStatusFilter = false,
+  disablePriorityFilter = false,
+  disableSortFilter = false,
 }) => {
+  const defaultFilterValues: TaskFilters = {
+    status: "all",
+    priority: "all",
+    sortBy: "createdAt_desc",
+    ...defaultFilters,
+  };
+
   const [filteredTasks, setFilteredTasks] = useState<Task[]>(tasks);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
-  const [filterStatus, setFilterStatus] = useState<TaskStatus | "all">("all");
-  const [filterPriority, setFilterPriority] = useState<TaskPriority | "all">(
-    "all"
+  const [filterStatus, setFilterStatus] = useState<TaskStatus | "all">(
+    defaultFilterValues.status
   );
-  const [sortBy, setSortBy] = useState<SortOption>("createdAt_desc");
+  const [filterPriority, setFilterPriority] = useState<TaskPriority | "all">(
+    defaultFilterValues.priority
+  );
+  const [sortBy, setSortBy] = useState<SortOption>(defaultFilterValues.sortBy);
 
   // Apply filters and sorting whenever tasks or filter/sort options change
   useEffect(() => {
@@ -65,6 +89,10 @@ const TaskList: React.FC<TaskListProps> = ({
         case "createdAt_asc":
           return (
             new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+        case "updatedAt_desc":
+          return (
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
           );
         case "priority_high": {
           const priorityOrder = { high: 0, medium: 1, low: 2 };
@@ -112,6 +140,7 @@ const TaskList: React.FC<TaskListProps> = ({
   const sortOptions = [
     { label: "Newest First", value: "createdAt_desc" },
     { label: "Oldest First", value: "createdAt_asc" },
+    { label: "Last Updated", value: "updatedAt_desc" },
     { label: "Priority (High to Low)", value: "priority_high" },
     { label: "Priority (Low to High)", value: "priority_low" },
   ];
@@ -119,61 +148,69 @@ const TaskList: React.FC<TaskListProps> = ({
   return (
     <div className={styles.tasksContainer}>
       <div className={styles.taskListHeader}>
-        <h1>My Tasks</h1>
-        <Button
-          variant="primary"
-          onClick={() => setIsCreateModalOpen(true)}
-          icon={
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              width="20"
-              height="20"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-          }
-        >
-          Add New Task
-        </Button>
+        <h2>{filterStatus === "completed" ? "Completed Tasks" : "Tasks"}</h2>
+        {onCreateTask && (
+          <Button
+            variant="primary"
+            onClick={() => setIsCreateModalOpen(true)}
+            icon={
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                width="20"
+                height="20"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+            }
+          >
+            Add New Task
+          </Button>
+        )}
       </div>
 
       <div className={styles.taskControls}>
         <div className={styles.taskFilters}>
-          <Select
-            id="statusFilter"
-            value={filterStatus}
-            onChange={(e) =>
-              setFilterStatus(e.target.value as TaskStatus | "all")
-            }
-            options={statusFilterOptions}
-            fullWidth={false}
-          />
+          {!disableStatusFilter && (
+            <Select
+              id="statusFilter"
+              value={filterStatus}
+              onChange={(e) =>
+                setFilterStatus(e.target.value as TaskStatus | "all")
+              }
+              options={statusFilterOptions}
+              fullWidth={false}
+            />
+          )}
 
-          <Select
-            id="priorityFilter"
-            value={filterPriority}
-            onChange={(e) =>
-              setFilterPriority(e.target.value as TaskPriority | "all")
-            }
-            options={priorityFilterOptions}
-            fullWidth={false}
-          />
+          {!disablePriorityFilter && (
+            <Select
+              id="priorityFilter"
+              value={filterPriority}
+              onChange={(e) =>
+                setFilterPriority(e.target.value as TaskPriority | "all")
+              }
+              options={priorityFilterOptions}
+              fullWidth={false}
+            />
+          )}
 
-          <Select
-            id="sortBy"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortOption)}
-            options={sortOptions}
-            fullWidth={false}
-          />
+          {!disableSortFilter && (
+            <Select
+              id="sortBy"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortOption)}
+              options={sortOptions}
+              fullWidth={false}
+            />
+          )}
         </div>
 
         <div>
@@ -221,47 +258,51 @@ const TaskList: React.FC<TaskListProps> = ({
               ? "Try adjusting your filters to see more tasks"
               : "Create your first task to get started"}
           </p>
-          <Button
-            variant="primary"
-            onClick={() => setIsCreateModalOpen(true)}
-            icon={
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                width="20"
-                height="20"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-            }
-          >
-            Create New Task
-          </Button>
+          {onCreateTask && (
+            <Button
+              variant="primary"
+              onClick={() => setIsCreateModalOpen(true)}
+              icon={
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  width="20"
+                  height="20"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+              }
+            >
+              Create New Task
+            </Button>
+          )}
         </div>
       )}
 
       {/* Create Task Modal */}
-      <Modal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        title="Create New Task"
-      >
-        <TaskForm
-          onSubmit={(taskData) => {
-            onCreateTask(taskData);
-            setIsCreateModalOpen(false);
-          }}
-          onCancel={() => setIsCreateModalOpen(false)}
-          isLoading={isLoading}
-        />
-      </Modal>
+      {onCreateTask && (
+        <Modal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          title="Create New Task"
+        >
+          <TaskForm
+            onSubmit={(taskData) => {
+              onCreateTask(taskData);
+              setIsCreateModalOpen(false);
+            }}
+            onCancel={() => setIsCreateModalOpen(false)}
+            isLoading={isLoading}
+          />
+        </Modal>
+      )}
 
       {/* Edit Task Modal */}
       {currentTask && (

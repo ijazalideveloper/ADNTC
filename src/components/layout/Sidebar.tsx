@@ -98,28 +98,35 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   ];
 
   return (
-    <div className={`${styles.sidebar} ${isOpen ? "" : styles.collapsed}`}>
+    <aside className={`${styles.sidebar} ${isOpen ? "" : styles.collapsed}`}>
       <div className={styles.sidebarHeader}>
         <h2>Task Manager</h2>
       </div>
       <nav className={styles.sidebarNav}>
-        {navItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`${styles.sidebarNavItem} ${
-              pathname === item.href ? styles.active : ""
-            }`}
-          >
-            <span className={styles.icon}>{item.icon}</span>
-            {item.label}
-          </Link>
-        ))}
+        {navItems.map((item) => {
+          // Check if the pathname matches the item's href or if it's a sub-path
+          const isActive =
+            pathname === item.href ||
+            (item.href !== "/dashboard" && pathname?.startsWith(item.href));
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`${styles.sidebarNavItem} ${
+                isActive ? styles.active : ""
+              }`}
+            >
+              <span className={styles.icon}>{item.icon}</span>
+              {item.label}
+            </Link>
+          );
+        })}
       </nav>
       <div className={styles.sidebarFooter}>
         <p>© 2025 Task Manager</p>
       </div>
-    </div>
+    </aside>
   );
 };
 
