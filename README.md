@@ -1,5 +1,38 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## 🚀 Tech Stack
+
+**Frontend:**
+- Next.js (App Router)
+- React 18
+- TypeScript
+- SASS
+
+**Backend:**
+- Next.js API Routes
+- Node.js
+- MongoDB
+- Mongoose (ODM)
+
+**Authentication:**
+- JSON Web Tokens (JWT)
+
+**Others:**
+- ESLint and Prettier for code formatting
+- Vercel (Optional) for deployment
+- Environment Variables (.env.local)
+
+---
+
+### 📋 Why These Choices?
+
+- **Next.js**: Full-stack capabilities — frontend + backend (API) in one framework.
+- **MongoDB**: Flexible, document-based NoSQL database, perfect for task and user models.
+- **TypeScript**: Improved developer experience and code safety.
+- **Mongoose**: Provides schema validation and easy database interaction.
+- **JWT**: Simple and secure authentication flow for users.
+
+
 ## Getting Started
 
 First, run the development server:
@@ -34,35 +67,3 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## 🚀 Tech Stack
-
-**Frontend:**
-- Next.js (App Router)
-- React 18
-- TypeScript
-- SASS
-
-**Backend:**
-- Next.js API Routes
-- Node.js
-- MongoDB
-- Mongoose (ODM)
-
-**Authentication:**
-- JSON Web Tokens (JWT)
-
-**Others:**
-- ESLint and Prettier for code formatting
-- Vercel (Optional) for deployment
-- Environment Variables (.env.local)
-
----
-
-### 📋 Why These Choices?
-
-- **Next.js**: Full-stack capabilities — frontend + backend (API) in one framework.
-- **MongoDB**: Flexible, document-based NoSQL database, perfect for task and user models.
-- **TypeScript**: Improved developer experience and code safety.
-- **Mongoose**: Provides schema validation and easy database interaction.
-- **JWT**: Simple and secure authentication flow for users.
