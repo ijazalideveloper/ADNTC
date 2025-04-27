@@ -1,5 +1,7 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+[Demo Link App](https://adntc-jbhl.vercel.app/analytics) 
+
 ## 🚀 Tech Stack
 
 **Frontend:**
@@ -67,3 +69,10 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+<img width="1440" alt="image" src="https://github.com/user-attachments/assets/edd96ef6-b711-4a35-bb3b-caa97c0a8769" />
+<img width="1439" alt="image" src="https://github.com/user-attachments/assets/e0eaa090-c98d-4ca1-a020-c2778a9d7c8a" />
+<img width="1439" alt="image" src="https://github.com/user-attachments/assets/2d766c56-0f88-495a-85aa-088ffbe30f45" />
+
+
+
